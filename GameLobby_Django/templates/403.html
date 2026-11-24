@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Request could not be completed · GameLobby{% endblock %}
+{% block account %}
+  <h1>Please try again.</h1>
+  <p class="lede">Reload the form and submit it again.</p>
+  <p class="crosslink"><a href="{% url 'login' %}">Return to log in</a></p>
+{% endblock %}

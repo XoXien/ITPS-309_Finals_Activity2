@@ -1,0 +1,30 @@
+{% load static %}
+<div class="field{% if field.errors %} invalid{% endif %}">
+  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+  <div class="input-wrap">
+    <img class="leading-icon"
+         src="{% static 'lobby/assets/' %}{{ icon }}.svg"
+         width="22"
+         height="22"
+         alt="">
+    {{ field }}
+    {% if secret %}
+      <button type="button"
+              class="reveal"
+              data-reveal="{{ field.auto_id }}"
+              aria-label="Show {{ field.label|lower }}"
+              aria-pressed="false">
+        <img src="{% static 'lobby/assets/eye.svg' %}"
+             data-show-src="{% static 'lobby/assets/eye.svg' %}"
+             data-hide-src="{% static 'lobby/assets/eyeoff.svg' %}"
+             alt=""
+             width="20"
+             height="20">
+      </button>
+    {% endif %}
+  </div>
+  {% if field.help_text %}<div class="{% if field.name == 'password1' %}auth-hint{% else %}sr-only{% endif %}"
+                               id="{{ field.auto_id }}_helptext">{{ field.help_text }}</div>{% endif %}
+  {% if field.errors %}<ul class="errors"
+                           id="{{ field.auto_id }}_error">{% for err in field.errors %}<li>{{ err }}</li>{% endfor %}</ul>{% endif %}
+</div>
