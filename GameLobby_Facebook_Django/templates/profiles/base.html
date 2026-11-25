@@ -27,7 +27,6 @@
           </nav>
         {% endif %}
         <div class="account-actions">
-          <a class="project-switch" href="{% url 'games:home' %}">GameLobby</a>
           {% if user.is_authenticated %}
             <a class="header-avatar"
                href="{% url 'facebook:home' %}"

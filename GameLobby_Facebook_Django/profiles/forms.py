@@ -9,7 +9,7 @@ from PIL import Image, ImageOps
 
 from lobby.forms import RegisterForm
 
-from .models import Profile
+from .models import Post, Profile
 
 
 class RegistrationForm(RegisterForm):
@@ -40,6 +40,20 @@ class LoginForm(AuthenticationForm):
         super().__init__(*args, **kwargs)
         self.fields["username"].widget.attrs["autocomplete"] = "username"
         self.fields["password"].widget.attrs["autocomplete"] = "current-password"
+
+
+class PostForm(forms.ModelForm):
+    body = forms.CharField(
+        label="What's on your mind?",
+        max_length=2000,
+        strip=True,
+        help_text="Your post will be public on your profile. Maximum 2,000 characters.",
+        widget=forms.Textarea(attrs={"rows": 5, "placeholder": "Share an update..."}),
+    )
+
+    class Meta:
+        model = Post
+        fields = ("body",)
 
 
 class ProfileForm(forms.ModelForm):

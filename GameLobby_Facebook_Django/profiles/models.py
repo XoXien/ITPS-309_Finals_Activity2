@@ -44,3 +44,16 @@ class Profile(models.Model):
     def initials(self):
         words = self.name.split()
         return "".join(word[0] for word in words[:2]).upper()
+
+
+class Post(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="posts")
+    body = models.TextField(max_length=2000)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at", "-pk"]
+
+    def __str__(self):
+        return self.body[:80]

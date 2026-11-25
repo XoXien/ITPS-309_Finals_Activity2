@@ -155,35 +155,59 @@
               {% endif %}
             </section>
           </aside>
-          <section class="timeline" aria-label="Profile updates">
-            {% if can_edit %}
+          <section class="timeline" id="profile-posts" aria-label="Profile updates">
+            {% if can_post %}
               <section class="card create-card">
                 <div class="create-row">
                   <span class="small-avatar">
-                    {% if profile.profile_picture %}
-                      <img src="{{ profile.profile_picture.url }}" alt="">
-            {% else %}{{ profile.initials }}{% endif %}
-              </span>
-              <a class="create-prompt"
-                 href="{% url 'facebook:upload_photo' profile.public_id 'profile' %}"
-                 data-open="picture-dialog">
-                {% if profile.profile_picture %}Ready for a new profile picture?{% else %}Add your first profile picture{% endif %}
-              </a>
-              </div>
-              <div class="create-actions">
-                <a href="{% url 'facebook:upload_photo' profile.public_id 'profile' %}"
-                   data-open="picture-dialog">
-                  <span class="photo-symbol" aria-hidden="true">▧</span> Profile photo</a>
-                <a href="{% url 'facebook:upload_photo' profile.public_id 'cover' %}"
-                   data-open="cover-dialog">
-                  <span class="cover-symbol" aria-hidden="true">▧</span> Cover photo</a>
-              </div>
+                    {% if profile.profile_picture %}<img src="{{ profile.profile_picture.url }}"
+                                                         alt="">{% else %}{{ profile.initials }}{% endif %}
+                  </span>
+                  <a class="create-prompt"
+                     href="{% url 'facebook:create_post' profile.public_id %}"
+                     data-open="post-dialog">What's on your mind, {{ profile.name }}?</a>
+                </div>
+                <div class="composer-note"><span class="public-badge">Public</span><span>Share an update on your profile.</span></div>
               </section>
             {% endif %}
             <div class="timeline-heading">
               <h2>Posts</h2>
-              <span>Profile updates</span>
+              <span>{{ posts.paginator.count }} post{{ posts.paginator.count|pluralize }}</span>
             </div>
+            {% for post in posts %}
+              <article class="card text-post" id="post-{{ post.pk }}">
+                <header class="update-header">
+                  <span class="small-avatar">
+                    {% if profile.profile_picture %}<img src="{{ profile.profile_picture.url }}"
+                                                         alt="">{% else %}{{ profile.initials }}{% endif %}
+                  </span>
+                  <div class="post-author">
+                    <p><strong>{{ profile.name }}</strong></p>
+                    <p class="post-time"><time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|date:"M j, Y · g:i A" }}</time> · Public{% if post.updated_at %} · Edited{% endif %}</p>
+                  </div>
+                  {% if can_post %}
+                    <details class="post-menu">
+                      <summary aria-label="Options for your post">···</summary>
+                      <nav aria-label="Post actions">
+                        <a href="{% url 'facebook:edit_post' profile.public_id post.pk %}">Edit post</a>
+                        <a class="delete-link"
+                           href="{% url 'facebook:delete_post' profile.public_id post.pk %}">Delete post</a>
+                      </nav>
+                    </details>
+                  {% endif %}
+                </header>
+                <p class="post-body">{{ post.body|linebreaksbr }}</p>
+              </article>
+            {% endfor %}
+            {% if posts.paginator.num_pages > 1 %}
+              <nav class="post-pagination" aria-label="Post pages">
+                {% if posts.has_previous %}<a class="button secondary"
+                                              href="?tab=posts&page={{ posts.previous_page_number }}#profile-posts">Newer posts</a>{% endif %}
+                <span>Page {{ posts.number }} of {{ posts.paginator.num_pages }}</span>
+                {% if posts.has_next %}<a class="button secondary"
+                                          href="?tab=posts&page={{ posts.next_page_number }}#profile-posts">Older posts</a>{% endif %}
+              </nav>
+            {% endif %}
             {% if profile.profile_picture %}
               <article class="card update-card">
                 <header class="update-header">
@@ -207,7 +231,7 @@
                   <p>Profile picture updated</p>
                 </div>
               </article>
-            {% else %}
+            {% elif not posts %}
               <section class="card welcome-card">
                 <div class="welcome-avatar">
                   <span>{{ profile.initials }}</span>
@@ -321,6 +345,32 @@
       {% endif %}
     </div>
   </main>
+  {% if can_post %}
+    <dialog id="post-dialog" class="profile-dialog">
+      <div class="dialog-header">
+        <h2>Create post</h2>
+        <button type="button"
+                class="close-button"
+                data-close
+                aria-label="Close create post">×</button>
+      </div>
+      <form method="post"
+            action="{% url 'facebook:create_post' profile.public_id %}"
+            data-save-form>
+        {% csrf_token %}
+        <div class="dialog-body">
+          <div class="post-dialog-author">
+            <span class="small-avatar">{% if profile.profile_picture %}<img src="{{ profile.profile_picture.url }}" alt="">{% else %}{{ profile.initials }}{% endif %}</span>
+            <div><strong>{{ profile.name }}</strong><span class="post-dialog-visibility">Public post</span></div>
+          </div>
+          {% include "profiles/fields.html" with form=post_form %}
+        </div>
+        <div class="dialog-footer">
+          <button type="submit" class="button primary full-width">Post</button>
+        </div>
+      </form>
+    </dialog>
+  {% endif %}
   {% if can_edit %}
     <dialog id="edit-dialog" class="profile-dialog">
       <div class="dialog-header">

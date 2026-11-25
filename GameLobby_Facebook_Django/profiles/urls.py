@@ -26,6 +26,19 @@ urlpatterns = [
     path("profile/<uuid:public_id>/", views.profile_page, name="profile"),
     path("profile/<uuid:public_id>/edit/", views.edit_profile, name="edit_profile"),
     path(
+        "profile/<uuid:public_id>/posts/create/", views.create_post, name="create_post"
+    ),
+    path(
+        "profile/<uuid:public_id>/posts/<int:post_id>/edit/",
+        views.edit_post,
+        name="edit_post",
+    ),
+    path(
+        "profile/<uuid:public_id>/posts/<int:post_id>/delete/",
+        views.delete_post,
+        name="delete_post",
+    ),
+    path(
         "profile/<uuid:public_id>/photo/<str:kind>/",
         views.upload_photo,
         name="upload_photo",

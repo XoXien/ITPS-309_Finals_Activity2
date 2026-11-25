@@ -1,0 +1,21 @@
+{% extends "profiles/base.html" %}
+{% block title %}Delete post | Profile{% endblock %}
+{% block content %}
+  <main id="main" class="editor-shell">
+    <a class="back-link" href="{{ profile.get_absolute_url }}">Back to profile</a>
+    <section class="card editor-card">
+      <h1>Delete this post?</h1>
+      <p>This will remove the post from your profile.</p>
+      <blockquote class="delete-post-preview">
+        {{ post.body|truncatechars:300|linebreaksbr }}
+      </blockquote>
+      <form method="post" data-save-form>
+        {% csrf_token %}
+        <div class="editor-actions">
+          <a class="button secondary" href="{{ profile.get_absolute_url }}">Cancel</a>
+          <button class="button danger" type="submit">Delete post</button>
+        </div>
+      </form>
+    </section>
+  </main>
+{% endblock %}

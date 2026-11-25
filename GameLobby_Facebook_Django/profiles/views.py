@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -11,8 +12,8 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods
 
-from .forms import PhotoForm, ProfileForm, RegistrationForm
-from .models import Profile
+from .forms import PhotoForm, PostForm, ProfileForm, RegistrationForm
+from .models import Post, Profile
 
 
 def can_edit(request, profile):
@@ -23,6 +24,15 @@ def can_edit(request, profile):
 
 def require_owner(request, profile):
     if not can_edit(request, profile):
+        raise PermissionDenied
+
+
+def can_post(request, profile):
+    return request.user.is_authenticated and profile.user_id == request.user.pk
+
+
+def require_post_owner(request, profile):
+    if not can_post(request, profile):
         raise PermissionDenied
 
 
@@ -80,11 +90,93 @@ def profile_page(request, public_id):
         {
             "profile": profile,
             "can_edit": can_edit(request, profile),
+            "can_post": can_post(request, profile),
             "tab": tab,
             "profile_form": ProfileForm(instance=profile),
             "picture_form": PhotoForm(prefix="profile"),
             "cover_form": PhotoForm(prefix="cover"),
+            "post_form": PostForm(),
+            "posts": Paginator(profile.posts.all(), 10).get_page(
+                request.GET.get("page")
+            )
+            if tab == "posts"
+            else None,
             "public_link": request.build_absolute_uri(profile.get_absolute_url()),
+        },
+    )
+
+
+@never_cache
+@login_required
+@require_http_methods(["GET", "POST"])
+def create_post(request, public_id):
+    profile = get_object_or_404(Profile, public_id=public_id)
+    require_post_owner(request, profile)
+    form = PostForm(request.POST if request.method == "POST" else None)
+    if request.method == "POST" and form.is_valid():
+        post = form.save(commit=False)
+        post.profile = profile
+        post.save()
+        messages.success(request, "Your post has been published.")
+        return redirect(profile)
+    return render(
+        request,
+        "profiles/editor.html",
+        {
+            "profile": profile,
+            "form": form,
+            "heading": "Create post",
+            "action": "Post",
+            "can_edit": True,
+        },
+    )
+
+
+@never_cache
+@login_required
+@require_http_methods(["GET", "POST"])
+def edit_post(request, public_id, post_id):
+    profile = get_object_or_404(Profile, public_id=public_id)
+    require_post_owner(request, profile)
+    post = get_object_or_404(Post, profile=profile, pk=post_id)
+    form = PostForm(request.POST if request.method == "POST" else None, instance=post)
+    if request.method == "POST" and form.is_valid():
+        updated = form.save(commit=False)
+        updated.updated_at = timezone.now()
+        updated.save(update_fields=["body", "updated_at"])
+        messages.success(request, "Your post has been updated.")
+        return redirect(profile)
+    return render(
+        request,
+        "profiles/editor.html",
+        {
+            "profile": profile,
+            "form": form,
+            "heading": "Edit post",
+            "action": "Save changes",
+            "can_edit": True,
+        },
+    )
+
+
+@never_cache
+@login_required
+@require_http_methods(["GET", "POST"])
+def delete_post(request, public_id, post_id):
+    profile = get_object_or_404(Profile, public_id=public_id)
+    require_post_owner(request, profile)
+    post = get_object_or_404(Post, profile=profile, pk=post_id)
+    if request.method == "POST":
+        post.delete()
+        messages.success(request, "Your post has been deleted.")
+        return redirect(profile)
+    return render(
+        request,
+        "profiles/delete_post.html",
+        {
+            "profile": profile,
+            "post": post,
+            "can_edit": True,
         },
     )
 
