@@ -1,0 +1,9 @@
+{% extends "profiles/base.html" %}{% block title %}Editing unavailable{% endblock %}{% block content %}
+<main id="main" class="editor-shell">
+  <section class="card editor-card">
+    <h1>This profile belongs to another account.</h1>
+    <p>You can view their public profile or return to your own.</p>
+    <a class="button primary" href="{% url 'facebook:home' %}">Open your profile</a>
+  </section>
+</main>
+{% endblock %}

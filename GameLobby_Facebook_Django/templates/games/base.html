@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0c0f16">
+    <title>{% block title %}GameLobby{% endblock %}</title>
+    <link rel="icon"
+          href="{% static 'lobby/assets/favicon.svg' %}"
+          type="image/svg+xml">
+    <link rel="stylesheet" href="{% static 'lobby/site.css' %}">
+    <script src="{% static 'lobby/site.js' %}" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="{% url 'games:login' %}" aria-label="GameLobby">
+          <span class="brand-tile">
+            <img src="{% static 'lobby/assets/gamepad.svg' %}"
+                 alt=""
+                 width="28"
+                 height="25">
+          </span>
+          <span>GameLobby</span>
+        </a>
+        {% if not user.is_authenticated %}
+          <nav class="topnav" aria-label="Account navigation">
+            {% if request.resolver_match.url_name == "register" %}
+              <a class="utility" href="{% url 'games:login' %}">Log in</a>
+            {% else %}
+              <a class="utility" href="{% url 'games:register' %}">Register</a>
+            {% endif %}
+          </nav>
+        {% endif %}
+      </div>
+    </header>
+    <main id="main" class="auth-layout">
+      {% include "games/parts/arena.html" %}
+      <section class="form-zone">
+        <div class="auth-panel {% block panelclass %}{% endblock %}">
+          {% block account %}{% endblock %}
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+{% extends "games/accounts/base.html" %}
+{% block title %}Create an account · GameLobby{% endblock %}
+{% block panelclass %}register-panel{% endblock %}
+{% block account %}
+  <h1>Create an account</h1>
+  <p class="lede">Create your GameLobby account.</p>
+  <form method="post" class="auth-form">
+    {% csrf_token %}
+    {% include "games/parts/nonfield.html" %}
+    {% include "games/parts/auth_field.html" with field=form.username icon="user" %}
+    {% include "games/parts/auth_field.html" with field=form.email icon="mail" %}
+    {% include "games/parts/auth_field.html" with field=form.password1 icon="lock" secret=True %}
+    {% include "games/parts/auth_field.html" with field=form.password2 icon="lock" secret=True %}
+    <button class="primary wide" type="submit">Create account</button>
+  </form>
+  <p class="crosslink">Already have an account? <a href="{% url 'games:login' %}">Log in</a></p>
+{% endblock %}

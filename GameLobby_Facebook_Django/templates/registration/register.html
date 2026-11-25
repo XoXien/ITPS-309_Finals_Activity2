@@ -1,0 +1,27 @@
+{% extends "profiles/base.html" %}
+{% block title %}Create an account | Profile classroom demo{% endblock %}
+{% block header %}{% endblock %}
+{% block content %}
+  <main id="main" class="auth-shell">
+    <section class="auth-intro">
+      <a class="back-link project-return" href="{% url 'games:home' %}">← GameLobby</a>
+      <span class="activity-label">FACEBOOK PROFILE CLONE</span>
+      <a class="wordmark auth-wordmark" href="{% url 'facebook:login' %}">facebook</a>
+      <h1>Your profile starts here.</h1>
+      <p>One account for your photos, your details, and your own little corner.</p>
+      <span class="demo-label">Classroom demo · Separate from Facebook</span>
+    </section>
+    <section class="card auth-card" aria-labelledby="auth-heading">
+      <div class="auth-card-heading">
+        <h2 id="auth-heading">Create an account</h2>
+        <p>Make a profile for this classroom demo.</p>
+      </div>
+      <form method="post" action="{% url 'facebook:register' %}" data-save-form>
+        {% csrf_token %}
+        {% include "profiles/fields.html" %}
+        <button class="button register-button full-width auth-submit" type="submit">Create account</button>
+      </form>
+      <p class="auth-switch">Already have an account? <a href="{% url 'facebook:login' %}">Log in</a></p>
+    </section>
+  </main>
+{% endblock %}

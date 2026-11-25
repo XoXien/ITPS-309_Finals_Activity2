@@ -1,0 +1,9 @@
+{% extends "profiles/base.html" %}{% block title %}Please try again{% endblock %}{% block content %}
+<main id="main" class="editor-shell">
+  <section class="card editor-card">
+    <h1>We couldn't save that change.</h1>
+    <p>Please try again in a moment.</p>
+    <a class="button primary" href="{% url 'facebook:home' %}">Back to profile</a>
+  </section>
+</main>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "profiles/base.html" %}
+{% block title %}{{ heading }} | Profile{% endblock %}
+{% block content %}
+  <main id="main" class="editor-shell">
+    <a class="back-link" href="{{ profile.get_absolute_url }}">Back to profile</a>
+    <section class="card editor-card">
+      <h1>{{ heading }}</h1>
+      <form method="post"
+            {% if photo_editor %}enctype="multipart/form-data"{% endif %}
+            data-save-form>
+        {% csrf_token %}
+        {% if photo_editor %}
+          <div class="upload-preview">
+            <img alt="Selected photo preview" data-preview hidden>
+          </div>
+        {% endif %}
+        {% include "profiles/fields.html" %}
+        <div class="editor-actions">
+          <a class="button secondary" href="{{ profile.get_absolute_url }}">Cancel</a>
+          <button class="button primary" type="submit">{{ action }}</button>
+        </div>
+      </form>
+    </section>
+  </main>
+{% endblock %}

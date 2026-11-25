@@ -1,0 +1,31 @@
+{% extends "profiles/base.html" %}
+{% block title %}Log in | Profile classroom demo{% endblock %}
+{% block header %}{% endblock %}
+{% block content %}
+  <main id="main" class="auth-shell">
+    <section class="auth-intro">
+      <a class="back-link project-return" href="{% url 'games:home' %}">← GameLobby</a>
+      <span class="activity-label">FACEBOOK PROFILE CLONE</span>
+      <a class="wordmark auth-wordmark" href="{% url 'facebook:login' %}">facebook</a>
+      <h1>A little more you.</h1>
+      <p>Add a picture, share your story, and make your profile your own.</p>
+      <span class="demo-label">Classroom demo · Separate from Facebook</span>
+    </section>
+    <section class="card auth-card" aria-labelledby="auth-heading">
+      <div class="auth-card-heading">
+        <h2 id="auth-heading">Welcome back</h2>
+        <p>Use your shared account to manage your profile.</p>
+      </div>
+      <form method="post" action="{% url 'facebook:login' %}" data-save-form>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        {% include "profiles/fields.html" %}
+        <button class="button primary full-width auth-submit" type="submit">Log in</button>
+      </form>
+      <div class="auth-divider"><span>New here?</span></div>
+      <a class="button register-button full-width"
+         href="{% url 'facebook:register' %}">Create an account</a>
+      <p class="auth-note">Your GameLobby account works here too.</p>
+    </section>
+  </main>
+{% endblock %}

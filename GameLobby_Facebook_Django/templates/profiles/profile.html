@@ -1,0 +1,399 @@
+{% extends "profiles/base.html" %}
+{% load static %}
+{% block title %}{{ profile.name }} | Profile{% endblock %}
+{% block content %}
+  <main id="main">
+    <section class="profile-hero">
+      <div class="hero-inner">
+        <div class="cover">
+          <img src="{% if profile.cover_photo %}{{ profile.cover_photo.url }}{% else %}{% static 'profiles/images/cover.jpg' %}{% endif %}"
+               alt="{% if profile.cover_photo %}{{ profile.name }}'s cover photo{% else %}Mountain lake cover photo{% endif %}"
+               class="cover-image"
+               fetchpriority="high">
+          {% if can_edit %}
+            <a class="button cover-button"
+               href="{% url 'facebook:upload_photo' profile.public_id 'cover' %}"
+               data-open="cover-dialog">
+              <span class="camera-icon" aria-hidden="true"></span>
+              <span>Edit cover photo</span>
+            </a>
+          {% endif %}
+        </div>
+        <div class="profile-identity">
+          <div class="avatar-wrap">
+            <div class="avatar">
+              {% if profile.profile_picture %}
+                <img src="{{ profile.profile_picture.url }}"
+                     alt="{{ profile.name }}'s profile picture">
+              {% else %}
+                <span class="avatar-initials" aria-hidden="true">{{ profile.initials }}</span>
+              {% endif %}
+            </div>
+            {% if can_edit %}
+              <a class="avatar-edit"
+                 href="{% url 'facebook:upload_photo' profile.public_id 'profile' %}"
+                 data-open="picture-dialog"
+                 aria-label="Upload profile picture">
+                <span class="camera-icon" aria-hidden="true"></span>
+              </a>
+            {% endif %}
+          </div>
+          <div class="identity-text">
+            <h1>{{ profile.name }}</h1>
+            {% if profile.headline %}
+              <p>{{ profile.headline }}</p>
+            {% endif %}
+          </div>
+          <div class="profile-actions">
+            {% if can_edit %}
+              <a class="button primary"
+                 href="{% url 'facebook:edit_profile' profile.public_id %}"
+                 data-open="edit-dialog">
+                <span aria-hidden="true">✎</span> Edit profile</a>
+            {% endif %}
+            <a class="button secondary"
+               href="{{ public_link }}"
+               data-copy-link="{{ public_link }}">Copy profile link</a>
+          </div>
+        </div>
+        <nav class="profile-tabs" aria-label="Profile sections">
+          <a href="{{ profile.get_absolute_url }}"
+             {% if tab == 'posts' %}aria-current="page"{% endif %}>Posts</a>
+          <a href="?tab=about"
+             {% if tab == 'about' %}aria-current="page"{% endif %}>About</a>
+          <a href="?tab=photos"
+             {% if tab == 'photos' %}aria-current="page"{% endif %}>Photos</a>
+        </nav>
+      </div>
+    </section>
+    <div class="profile-content">
+      {% if messages %}
+        <div class="messages" role="status">
+          {% for message in messages %}
+            <p class="message">{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+      {% if tab == "posts" %}
+        <div class="profile-columns">
+          <aside class="profile-sidebar">
+            <section class="card intro-card">
+              <h2>Intro</h2>
+              {% if profile.bio %}
+                <p class="bio">{{ profile.bio|linebreaksbr }}</p>
+              {% elif can_edit %}
+                <p class="empty-copy">Add a bio to tell people a little about yourself.</p>
+              {% endif %}
+              {% if can_edit %}
+                <a class="button secondary full-width"
+                   href="{% url 'facebook:edit_profile' profile.public_id %}"
+                   data-open="edit-dialog">{% if profile.bio %}Edit bio{% else %}Add bio{% endif %}</a>
+              {% endif %}
+              <ul class="intro-list">
+                {% if profile.workplace %}
+                  <li>
+                    <span class="intro-symbol" aria-hidden="true">▣</span>
+                    <span>Works at <strong>{{ profile.workplace }}</strong>
+                    </span>
+                  </li>
+                {% endif %}
+                {% if profile.school %}
+                  <li>
+                    <span class="intro-symbol" aria-hidden="true">▤</span>
+                    <span>Studies at <strong>{{ profile.school }}</strong>
+                    </span>
+                  </li>
+                {% endif %}
+                {% if profile.city %}
+                  <li>
+                    <span class="intro-symbol" aria-hidden="true">⌂</span>
+                    <span>Lives in <strong>{{ profile.city }}</strong>
+                    </span>
+                  </li>
+                {% endif %}
+                {% if profile.website %}
+                  <li>
+                    <span class="intro-symbol" aria-hidden="true">◎</span>
+                    <a href="{{ profile.website }}"
+                       target="_blank"
+                       rel="noopener noreferrer">{{ profile.website }}</a>
+                  </li>
+                {% endif %}
+                <li>
+                  <span class="intro-symbol" aria-hidden="true">◷</span>
+                  <span>Joined {{ profile.created_at|date:"F Y" }}</span>
+                </li>
+              </ul>
+              {% if can_edit %}
+                <a class="button secondary full-width"
+                   href="{% url 'facebook:edit_profile' profile.public_id %}"
+                   data-open="edit-dialog">Edit details</a>
+              {% endif %}
+            </section>
+            <section class="card">
+              <div class="card-heading">
+                <h2>Photos</h2>
+                <a href="?tab=photos">See all photos</a>
+              </div>
+              {% if profile.profile_picture or profile.cover_photo %}
+                <div class="photo-grid compact">
+                  {% if profile.profile_picture %}
+                    <a href="{{ profile.profile_picture.url }}"
+                       target="_blank"
+                       rel="noopener">
+                      <img src="{{ profile.profile_picture.url }}" alt="Profile photo">
+                    </a>
+                  {% endif %}
+                  {% if profile.cover_photo %}
+                    <a href="{{ profile.cover_photo.url }}" target="_blank" rel="noopener">
+                      <img src="{{ profile.cover_photo.url }}" alt="Cover photo">
+                    </a>
+                  {% endif %}
+                </div>
+              {% else %}
+                <p class="empty-copy">Your uploaded photos will appear here.</p>
+              {% endif %}
+            </section>
+          </aside>
+          <section class="timeline" aria-label="Profile updates">
+            {% if can_edit %}
+              <section class="card create-card">
+                <div class="create-row">
+                  <span class="small-avatar">
+                    {% if profile.profile_picture %}
+                      <img src="{{ profile.profile_picture.url }}" alt="">
+            {% else %}{{ profile.initials }}{% endif %}
+              </span>
+              <a class="create-prompt"
+                 href="{% url 'facebook:upload_photo' profile.public_id 'profile' %}"
+                 data-open="picture-dialog">
+                {% if profile.profile_picture %}Ready for a new profile picture?{% else %}Add your first profile picture{% endif %}
+              </a>
+              </div>
+              <div class="create-actions">
+                <a href="{% url 'facebook:upload_photo' profile.public_id 'profile' %}"
+                   data-open="picture-dialog">
+                  <span class="photo-symbol" aria-hidden="true">▧</span> Profile photo</a>
+                <a href="{% url 'facebook:upload_photo' profile.public_id 'cover' %}"
+                   data-open="cover-dialog">
+                  <span class="cover-symbol" aria-hidden="true">▧</span> Cover photo</a>
+              </div>
+              </section>
+            {% endif %}
+            <div class="timeline-heading">
+              <h2>Posts</h2>
+              <span>Profile updates</span>
+            </div>
+            {% if profile.profile_picture %}
+              <article class="card update-card">
+                <header class="update-header">
+                  <img class="small-avatar" src="{{ profile.profile_picture.url }}" alt="">
+                  <div>
+                    <p>
+                      <strong>{{ profile.name }}</strong> updated their profile picture.
+                    </p>
+                    <p class="post-time">
+                      {{ profile.picture_updated_at|date:"F j, Y" }} <span aria-hidden="true">· ◎</span>
+                      <span class="sr-only">Public</span>
+                    </p>
+                  </div>
+                </header>
+                <div class="update-photo">
+                  <img src="{{ profile.profile_picture.url }}"
+                       alt="{{ profile.name }}'s uploaded profile picture">
+                </div>
+                <div class="update-caption">
+                  <span class="blue-check" aria-hidden="true">✓</span>
+                  <p>Profile picture updated</p>
+                </div>
+              </article>
+            {% else %}
+              <section class="card welcome-card">
+                <div class="welcome-avatar">
+                  <span>{{ profile.initials }}</span>
+                </div>
+                <h2>
+                  {% if can_edit %}Make yourself at home.{% else %}Welcome to {{ profile.name }}'s profile.{% endif %}
+                </h2>
+                <p>
+                  {% if can_edit %}A photo makes your profile feel like you. Upload one, add a few details, and share your profile with your class.{% else %}Profile updates will appear here.{% endif %}
+                </p>
+                {% if can_edit %}
+                  <a class="button primary"
+                     href="{% url 'facebook:upload_photo' profile.public_id 'profile' %}"
+                     data-open="picture-dialog">
+                    <span class="camera-icon" aria-hidden="true"></span> Upload profile picture</a>
+                {% endif %}
+              </section>
+            {% endif %}
+            {% if can_edit %}
+              <p class="owner-note">Your profile is saved to your account. Use <strong>Copy profile link</strong> to share the public view.</p>
+            {% endif %}
+          </section>
+        </div>
+      {% elif tab == "about" %}
+        <section class="card about-card">
+          <div>
+            <h2>About</h2>
+            <p class="muted">A little more about {{ profile.name }}.</p>
+          </div>
+          <div class="about-details">
+            {% if profile.bio %}
+              <div>
+                <h3>Bio</h3>
+                <p>{{ profile.bio|linebreaksbr }}</p>
+              </div>
+            {% endif %}
+            {% if profile.headline %}
+              <div>
+                <h3>Headline</h3>
+                <p>{{ profile.headline }}</p>
+              </div>
+            {% endif %}
+            {% if profile.school %}
+              <div>
+                <h3>Education</h3>
+                <p>{{ profile.school }}</p>
+              </div>
+            {% endif %}
+            {% if profile.workplace %}
+              <div>
+                <h3>Work</h3>
+                <p>{{ profile.workplace }}</p>
+              </div>
+            {% endif %}
+            {% if profile.city %}
+              <div>
+                <h3>Current city</h3>
+                <p>{{ profile.city }}</p>
+              </div>
+            {% endif %}
+            {% if profile.website %}
+              <div>
+                <h3>Website</h3>
+                <a href="{{ profile.website }}"
+                   target="_blank"
+                   rel="noopener noreferrer">{{ profile.website }}</a>
+              </div>
+            {% endif %}
+            {% if can_edit %}
+              <a class="button secondary"
+                 href="{% url 'facebook:edit_profile' profile.public_id %}"
+                 data-open="edit-dialog">Edit details</a>
+            {% endif %}
+          </div>
+        </section>
+      {% else %}
+        <section class="card gallery-card">
+          <div class="card-heading">
+            <h2>Photos</h2>
+            {% if can_edit %}
+              <a class="button secondary"
+                 href="{% url 'facebook:upload_photo' profile.public_id 'profile' %}"
+                 data-open="picture-dialog">Upload photo</a>
+            {% endif %}
+          </div>
+          {% if profile.profile_picture or profile.cover_photo %}
+            <div class="photo-grid">
+              {% if profile.profile_picture %}
+                <a href="{{ profile.profile_picture.url }}"
+                   target="_blank"
+                   rel="noopener">
+                  <img src="{{ profile.profile_picture.url }}" alt="Profile picture">
+                  <span>Profile picture</span>
+                </a>
+              {% endif %}
+              {% if profile.cover_photo %}
+                <a href="{{ profile.cover_photo.url }}" target="_blank" rel="noopener">
+                  <img src="{{ profile.cover_photo.url }}" alt="Cover photo">
+                  <span>Cover photo</span>
+                </a>
+              {% endif %}
+            </div>
+          {% else %}
+            <div class="gallery-empty">
+              <span class="photo-symbol" aria-hidden="true">▧</span>
+              <h3>No photos yet</h3>
+              <p>Uploaded profile and cover pictures will appear here.</p>
+            </div>
+          {% endif %}
+        </section>
+      {% endif %}
+    </div>
+  </main>
+  {% if can_edit %}
+    <dialog id="edit-dialog" class="profile-dialog">
+      <div class="dialog-header">
+        <h2>Edit profile</h2>
+        <button type="button"
+                class="close-button"
+                data-close
+                aria-label="Close edit profile">×</button>
+      </div>
+      <form method="post"
+            action="{% url 'facebook:edit_profile' profile.public_id %}"
+            data-save-form>
+        {% csrf_token %}
+        <div class="dialog-body">{% include "profiles/fields.html" with form=profile_form %}</div>
+        <div class="dialog-footer">
+          <button type="submit" class="button primary full-width">Save changes</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="picture-dialog" class="profile-dialog photo-dialog">
+      <div class="dialog-header">
+        <h2>Update profile picture</h2>
+        <button type="button"
+                class="close-button"
+                data-close
+                aria-label="Close profile picture upload">×</button>
+      </div>
+      <form method="post"
+            enctype="multipart/form-data"
+            action="{% url 'facebook:upload_photo' profile.public_id 'profile' %}"
+            data-save-form>
+        {% csrf_token %}
+        <div class="dialog-body">
+          <div class="upload-preview circular">
+            {% if not profile.profile_picture %}
+              <span class="avatar-initials" data-placeholder>{{ profile.initials }}</span>
+            {% endif %}
+            <img {% if profile.profile_picture %}src="{{ profile.profile_picture.url }}"{% else %}hidden{% endif %}
+                 alt="Profile picture preview"
+                 data-preview>
+          </div>
+          {% include "profiles/fields.html" with form=picture_form %}
+        </div>
+        <div class="dialog-footer">
+          <button type="submit" class="button primary full-width">Save photo</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="cover-dialog" class="profile-dialog photo-dialog">
+      <div class="dialog-header">
+        <h2>Update cover photo</h2>
+        <button type="button"
+                class="close-button"
+                data-close
+                aria-label="Close cover photo upload">×</button>
+      </div>
+      <form method="post"
+            enctype="multipart/form-data"
+            action="{% url 'facebook:upload_photo' profile.public_id 'cover' %}"
+            data-save-form>
+        {% csrf_token %}
+        <div class="dialog-body">
+          <div class="upload-preview wide">
+            <img src="{% if profile.cover_photo %}{{ profile.cover_photo.url }}{% else %}{% static 'profiles/images/cover.jpg' %}{% endif %}"
+                 alt="Cover photo preview"
+                 data-preview>
+          </div>
+          {% include "profiles/fields.html" with form=cover_form %}
+        </div>
+        <div class="dialog-footer">
+          <button type="submit" class="button primary full-width">Save photo</button>
+        </div>
+      </form>
+    </dialog>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "profiles/base.html" %}{% block title %}Profile not found{% endblock %}{% block content %}
+<main id="main" class="editor-shell">
+  <section class="card editor-card">
+    <h1>Profile not found.</h1>
+    <a class="button primary" href="{% url 'facebook:home' %}">Open your profile</a>
+  </section>
+</main>
+{% endblock %}

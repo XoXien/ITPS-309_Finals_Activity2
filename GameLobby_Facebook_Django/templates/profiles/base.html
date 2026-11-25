@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0866ff">
+    <title>{% block title %}Facebook profile activity{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'profiles/site.css' %}">
+    <script src="{% static 'profiles/site.js' %}" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    {% block header %}
+      <header class="site-header">
+        <a class="wordmark"
+           href="{% url 'facebook:home' %}"
+           aria-label="Your profile home">facebook</a>
+        {% if profile %}
+          <nav class="header-nav" aria-label="Profile navigation">
+            <a href="{{ profile.get_absolute_url }}"
+               {% if tab == 'posts' %}aria-current="page"{% endif %}>Profile</a>
+            <a href="{{ profile.get_absolute_url }}?tab=about"
+               {% if tab == 'about' %}aria-current="page"{% endif %}>About</a>
+            <a href="{{ profile.get_absolute_url }}?tab=photos"
+               {% if tab == 'photos' %}aria-current="page"{% endif %}>Photos</a>
+          </nav>
+        {% endif %}
+        <div class="account-actions">
+          <a class="project-switch" href="{% url 'games:home' %}">GameLobby</a>
+          {% if user.is_authenticated %}
+            <a class="header-avatar"
+               href="{% url 'facebook:home' %}"
+               aria-label="Open your own profile">
+              {% if profile.profile_picture and profile.user_id == user.pk %}
+                <img src="{{ profile.profile_picture.url }}" alt="">
+              {% else %}
+                <span aria-hidden="true">Me</span>
+              {% endif %}
+            </a>
+            <form method="post" action="{% url 'facebook:logout' %}">
+              {% csrf_token %}
+              <button class="button secondary" type="submit">Log out</button>
+            </form>
+          {% else %}
+            <a class="button primary" href="{% url 'facebook:login' %}">Log in</a>
+          {% endif %}
+        </div>
+      </header>
+    {% endblock %}
+    {% block content %}{% endblock %}
+    <footer class="site-footer">
+      Facebook profile clone · Django classroom activity
+    </footer>
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>
